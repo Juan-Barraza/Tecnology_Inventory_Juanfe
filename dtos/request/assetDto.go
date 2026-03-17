@@ -7,6 +7,7 @@ type CreateAssetRequest struct {
 	Description       string   `json:"description"`
 	CategoryID        int      `json:"category_id"`
 	AccountingGroupID int      `json:"accounting_group_id"`
+	AssetAccountID    int      `json:"asset_account_id"`
 	CityID            int      `json:"city_id"`
 	AreaID            *int     `json:"area_id"`
 	HistoricalCost    *float64 `json:"historical_cost"`
@@ -18,6 +19,7 @@ type UpdateAssetRequest struct {
 	Description       *string  `json:"description"`
 	CategoryID        *int     `json:"category_id"`
 	AccountingGroupID *int     `json:"accounting_group_id"`
+	AssetAccountID    *int     `json:"asset_account_id"`
 	CityID            *int     `json:"city_id"`
 	AreaID            *int     `json:"area_id"`
 	HistoricalCost    *float64 `json:"historical_cost"`
@@ -36,6 +38,8 @@ type AssetResponse struct {
 	Code                string   `json:"code"`
 	Description         string   `json:"description"`
 	Category            string   `json:"category"`
+	AccountCode         int64    `json:"account_code"`
+	OpenLedger          *string  `json:"open_ledger"`
 	AccountingGroupName string   `json:"accounting_group_name"`
 	AccountingGroupCode int64    `json:"accounting_group_code"`
 	City                string   `json:"city"`
@@ -55,6 +59,7 @@ type AssetFilter struct {
 	AreaID            *int       `query:"area_id"`
 	CategoryID        *int       `query:"category_id"`
 	AccountingGroupID *int       `query:"accounting_group_id"`
+	AssetAccountID    *int       `query:"asset_account_id"`
 	LogicalStatus     *string    `query:"logical_status"`
 	PhysicalStatus    *string    `query:"physical_status"`
 	From              *time.Time `query:"from"`   // activation_date range start

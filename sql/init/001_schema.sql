@@ -7,6 +7,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TYPE logical_status_enum  AS ENUM ('active','inactive','written_off');
 CREATE TYPE physical_status_enum AS ENUM ('optimal','good','fair','deteriorated','out_of_service');
 CREATE TYPE assignment_status_enum AS ENUM ('active','released','written_off');
+CREATE TYPE period_status_enum AS ENUM ('open', 'closed');
 
 -- ── Catalogs ──────────────────────────────────────────────────
 CREATE TABLE cities (
@@ -110,6 +111,29 @@ CREATE TABLE status_history (
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE inventory_periods (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    period_year  INT  NOT NULL,
+    period_month INT  NOT NULL CHECK (period_month BETWEEN 1 AND 12),
+    status       period_status_enum NOT NULL DEFAULT 'open',
+    created_by   UUID NOT NULL REFERENCES users(id),
+    closed_at    TIMESTAMP WITH TIME ZONE,
+    created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_period UNIQUE (period_year, period_month)
+);
+
+CREATE TABLE inventory_records (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    period_id   UUID    NOT NULL REFERENCES inventory_periods(id),
+    asset_id    UUID    NOT NULL REFERENCES assets(id),
+    confirmed   BOOLEAN NOT NULL DEFAULT false,
+    deactivated BOOLEAN NOT NULL DEFAULT false,
+    notes       TEXT,
+    recorded_by UUID NOT NULL REFERENCES users(id),
+    recorded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_record_per_period UNIQUE (period_id, asset_id)
+);
+
 -- ── Indexes ───────────────────────────────────────────────────
 CREATE INDEX idx_assets_code             ON assets(code);
 CREATE INDEX idx_assets_logical_status   ON assets(logical_status);
@@ -124,6 +148,8 @@ CREATE INDEX idx_assignments_status      ON assignments(status);
 CREATE INDEX idx_assignments_dates       ON assignments(assigned_at, deactivated_at);
 CREATE INDEX idx_status_history_asset    ON status_history(asset_id);
 CREATE INDEX idx_status_history_date     ON status_history(created_at);
+CREATE INDEX idx_inventory_records_period  ON inventory_records(period_id);
+CREATE INDEX idx_inventory_records_asset   ON inventory_records(asset_id);
 
 -- ── updated_at trigger ────────────────────────────────────────
 CREATE OR REPLACE FUNCTION set_updated_at()

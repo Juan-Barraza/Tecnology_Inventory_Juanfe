@@ -76,3 +76,8 @@ type StatusHistory struct {
 	RecordedBy     string
 	CreatedAt      time.Time
 }
+
+type StatusHistoryDetail struct {
+	StatusHistory
+	RecordedByName string
+}
