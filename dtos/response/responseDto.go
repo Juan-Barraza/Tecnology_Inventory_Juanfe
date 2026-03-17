@@ -17,8 +17,4 @@ type PaginatedResponse struct {
 	TotalPages int         `json:"total_pages"`
 }
 
-// UpdateAccountingGroupRequest — editable fields only
-type UpdateAccountingGroupRequest struct {
-	Name       *string `json:"name"`
-	OpenLedger *string `json:"open_ledger"`
-}
+

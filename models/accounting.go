@@ -11,3 +11,17 @@ type AccountingGroup struct {
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
+
+// Para el formulario — grupo con sus subcuentas anidadas
+type AssetAccountItem struct {
+	ID          int     `json:"id"`
+	AccountCode int64   `json:"account_code"`
+	OpenLedger  *string `json:"open_ledger"`
+}
+
+type AccountingGroupWithAccounts struct {
+	ID       int                `json:"id"`
+	Code     int64              `json:"code"`
+	Name     string             `json:"name"`
+	Accounts []AssetAccountItem `json:"accounts"`
+}

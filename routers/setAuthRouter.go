@@ -9,11 +9,11 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetAuthRouter(apiv1 fiber.Router, db *sql.DB) {
+func SetAuthRouter(v1 fiber.Router, db *sql.DB) {
 	userRepo := repository.NewUserRepository(db)
 	authService := services.NewAuthService(userRepo)
 	authHandler := handlers.NewAuthHandler(authService)
 
-	auth := apiv1.Group("/auth")
+	auth := v1.Group("/auth")
 	auth.Post("/login", authHandler.Login)
 }
