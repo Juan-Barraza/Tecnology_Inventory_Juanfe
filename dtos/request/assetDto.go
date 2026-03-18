@@ -1,7 +1,5 @@
 package dtos
 
-import "time"
-
 type CreateAssetRequest struct {
 	Code              string   `json:"code"`
 	Description       string   `json:"description"`
@@ -55,16 +53,16 @@ type AssetResponse struct {
 // AssetFilter holds all query params for the list endpoint
 // GET /assets?city_id=1&area_id=2&logical_status=active&from=2022-01-01&to=2024-12-31
 type AssetFilter struct {
-	CityID            *int       `query:"city_id"`
-	AreaID            *int       `query:"area_id"`
-	CategoryID        *int       `query:"category_id"`
-	AccountingGroupID *int       `query:"accounting_group_id"`
-	AssetAccountID    *int       `query:"asset_account_id"`
-	LogicalStatus     *string    `query:"logical_status"`
-	PhysicalStatus    *string    `query:"physical_status"`
-	From              *time.Time `query:"from"`   // activation_date range start
-	To                *time.Time `query:"to"`     // activation_date range end
-	Search            *string    `query:"search"` // code or description ILIKE
-	Page              int        `query:"page"`
-	Limit             int        `query:"limit"`
+	CityID            *int    `query:"city_id"`
+	AreaID            *int    `query:"area_id"`
+	CategoryID        *int    `query:"category_id"`
+	AccountingGroupID *int    `query:"accounting_group_id"`
+	AssetAccountID    *int    `query:"asset_account_id"`
+	LogicalStatus     *string `query:"logical_status"`
+	PhysicalStatus    *string `query:"physical_status"`
+	From              *string `query:"from"`   // activation_date range start
+	To                *string `query:"to"`     // activation_date range end
+	Search            *string `query:"search"` // code or description ILIKE
+	Page              int     `query:"page"`
+	Limit             int     `query:"limit"`
 }

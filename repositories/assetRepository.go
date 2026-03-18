@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"time"
 
 	dtos "inventory-juanfe/dtos/request"
 	"inventory-juanfe/models"
@@ -187,14 +186,14 @@ func buildAssetWhere(f dtos.AssetFilter) (string, []interface{}) {
 		args = append(args, *f.PhysicalStatus)
 		n++
 	}
-	if f.From != nil {
+	if f.From != nil && *f.From != "" {
 		conds = append(conds, fmt.Sprintf("a.activation_date >= $%d", n))
-		args = append(args, f.From.Format(time.DateOnly))
+		args = append(args, *f.From)
 		n++
 	}
-	if f.To != nil {
+	if f.To != nil && *f.To != "" {
 		conds = append(conds, fmt.Sprintf("a.activation_date <= $%d", n))
-		args = append(args, f.To.Format(time.DateOnly))
+		args = append(args, *f.To)
 		n++
 	}
 	if f.Search != nil && *f.Search != "" {
