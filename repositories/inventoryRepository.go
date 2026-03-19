@@ -154,16 +154,17 @@ func (r *InventoryRepository) FindRecordByAsset(periodID, assetID string) (*mode
 func (r *InventoryRepository) UpsertRecord(rec *models.InventoryRecord) error {
 	_, err := r.db.Exec(`
         INSERT INTO inventory_records
-            (id, period_id, asset_id, confirmed, deactivated, notes, recorded_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+            (id, period_id, asset_id, confirmed, deactivated, has_label, notes, recorded_by)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (period_id, asset_id) DO UPDATE SET
             confirmed   = EXCLUDED.confirmed,
             deactivated = EXCLUDED.deactivated,
+			has_label 	= EXCLUDED.has_label,
             notes       = EXCLUDED.notes,
             recorded_by = EXCLUDED.recorded_by,
             recorded_at = NOW()`,
 		rec.ID, rec.PeriodID, rec.AssetID,
-		rec.Confirmed, rec.Deactivated, rec.Notes, rec.RecordedBy,
+		rec.Confirmed, rec.Deactivated, rec.HasLabel, rec.Notes, rec.RecordedBy,
 	)
 	return err
 }
@@ -195,12 +196,14 @@ func (r *InventoryRepository) FindAssetsWithPeriodStatus(periodID string) ([]mod
             a.id          AS asset_id,
             a.code        AS asset_code,
             a.description AS asset_description,
+			a.activation_date AS activation_date,
             ac.name       AS category_name,
             c.name        AS city_name,
             ar.name       AS area_name,
             ir.id         AS record_id,
             ir.confirmed  AS confirmed,
             ir.deactivated AS deactivated,
+			ir.has_label AS has_label,
             ir.notes      AS notes,
             ir.recorded_at AS recorded_at
         FROM assets a
@@ -224,10 +227,19 @@ func (r *InventoryRepository) FindAssetsWithPeriodStatus(periodID string) ([]mod
 	for rows.Next() {
 		var s models.AssetInventoryStatus
 		if err := rows.Scan(
-			&s.AssetID, &s.AssetCode, &s.AssetDescription,
-			&s.CategoryName, &s.CityName, &s.AreaName,
-			&s.RecordID, &s.Confirmed, &s.Deactivated,
-			&s.Notes, &s.RecordedAt,
+			&s.AssetID,
+			&s.AssetCode,
+			&s.AssetDescription,
+			&s.ActivationDate,
+			&s.CategoryName,
+			&s.CityName,
+			&s.AreaName,
+			&s.RecordID,
+			&s.Confirmed,
+			&s.Deactivated,
+			&s.HasLabel,
+			&s.Notes,
+			&s.RecordedAt,
 		); err != nil {
 			return nil, err
 		}

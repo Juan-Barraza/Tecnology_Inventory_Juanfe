@@ -129,6 +129,7 @@ CREATE TABLE inventory_records (
     confirmed   BOOLEAN NOT NULL DEFAULT false,
     deactivated BOOLEAN NOT NULL DEFAULT false,
     notes       TEXT,
+    has_label   BOOLEAN NOT NULL DEFAULT false,
     recorded_by UUID NOT NULL REFERENCES users(id),
     recorded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_record_per_period UNIQUE (period_id, asset_id)

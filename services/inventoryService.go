@@ -150,6 +150,7 @@ func (s *InventoryService) RecordAsset(req dtos.RecordAssetRequest, userID strin
 		Confirmed:   req.Confirmed,
 		Deactivated: req.Deactivated,
 		Notes:       req.Notes,
+		HasLabel:    req.HasLabel,
 		RecordedBy:  userID,
 	}
 
@@ -206,6 +207,8 @@ func (s *InventoryService) GetPeriodAssets(periodID string) ([]response.AssetInv
 			Deactivated:      a.Deactivated,
 			Notes:            a.Notes,
 			RecordedAt:       a.RecordedAt,
+			ActivationDate:   a.ActivationDate.Format("2006-01-02"),
+			HasLabel:         a.HasLabel,
 		}
 	}
 	return result, nil

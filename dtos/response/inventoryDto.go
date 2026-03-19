@@ -39,8 +39,10 @@ type AssetInventoryStatusResponse struct {
 	RecordID         *string    `json:"record_id"`
 	Confirmed        *bool      `json:"confirmed"`
 	Deactivated      *bool      `json:"deactivated"`
+	HasLabel         *bool      `json:"has_label"`
 	Notes            *string    `json:"notes"`
 	RecordedAt       *time.Time `json:"recorded_at"`
+	ActivationDate   string     `json:"activation_date"`
 }
 
 type PeriodProgressResponse struct {
@@ -48,4 +50,11 @@ type PeriodProgressResponse struct {
 	Reviewed   int     `json:"reviewed"`
 	Pending    int     `json:"pending"`
 	Percentage float64 `json:"percentage"`
+}
+
+type CounterAssetsToExport struct {
+	TotalConfirmated  int64 `json:"total_confirmated"`
+	TotalDesactivated int64 `json:"total_desactivated"`
+	TotalWithLabel    int64 `json:"total_with_label"`
+	TotalWithoutLabel int64 `json:"total_without_label"`
 }
