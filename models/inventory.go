@@ -26,6 +26,7 @@ type InventoryRecord struct {
 	Confirmed   bool
 	Deactivated bool
 	Notes       *string
+	HasLabel    bool
 	RecordedBy  string
 	RecordedAt  time.Time
 }
@@ -52,6 +53,8 @@ type AssetInventoryStatus struct {
 	RecordID         *string
 	Confirmed        *bool
 	Deactivated      *bool
+	HasLabel         *bool
+	ActivationDate   time.Time
 	Notes            *string
 	RecordedAt       *time.Time
 }

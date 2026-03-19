@@ -38,6 +38,43 @@ type Asset struct {
 	UpdatedAt      time.Time
 }
 
+type AssetExportWithDate struct {
+	Code                string
+	Description         string
+	HistoricalCost      *float64
+	ActivationDate      time.Time
+	LogicalStatus       LogicalStatus
+	PhysicalStatus      PhysicalStatus
+	CategoryName        string
+	AreaName            string
+	CityName            string
+	ResponsibleName     string
+	ResponsiblePosition string
+	PeriodYear          int
+	PeriodMonth         int
+	AccountCodeGroup    int64
+	SubCode             int64
+	Confirmed           bool
+	Deactivated         bool
+	HasLabel            bool
+}
+
+type AssetExport struct {
+	Code                string
+	Description         string
+	HistoricalCost      *float64
+	ActivationDate      time.Time
+	LogicalStatus       LogicalStatus
+	PhysicalStatus      PhysicalStatus
+	CategoryName        string
+	AreaName            string
+	CityName            string
+	ResponsibleName     string
+	ResponsiblePosition string
+	AccountCodeGroup    int64
+	SubCode             int64
+}
+
 // AssetDetail is used for list/detail queries with joined fields
 // so handlers never need to do extra lookups
 type AssetDetail struct {

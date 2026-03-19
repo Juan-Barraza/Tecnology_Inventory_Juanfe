@@ -11,4 +11,5 @@ type RecordAssetRequest struct {
 	Confirmed   bool    `json:"confirmed"`
 	Deactivated bool    `json:"deactivated"`
 	Notes       *string `json:"notes"`
+	HasLabel    bool    `json:"has_label"`
 }
