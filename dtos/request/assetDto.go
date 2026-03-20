@@ -14,6 +14,7 @@ type CreateAssetRequest struct {
 }
 
 type UpdateAssetRequest struct {
+	Code              string   `json:"code"`
 	Description       *string  `json:"description"`
 	CategoryID        *int     `json:"category_id"`
 	AccountingGroupID *int     `json:"accounting_group_id"`
@@ -40,6 +41,7 @@ type AssetResponse struct {
 	OpenLedger          *string  `json:"open_ledger"`
 	AccountingGroupName string   `json:"accounting_group_name"`
 	AccountingGroupCode int64    `json:"accounting_group_code"`
+	CityId              int      `json:"city_id"`
 	City                string   `json:"city"`
 	Area                *string  `json:"area"`
 	HistoricalCost      *float64 `json:"historical_cost"`

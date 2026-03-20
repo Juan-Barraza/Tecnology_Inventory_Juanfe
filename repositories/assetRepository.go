@@ -127,16 +127,17 @@ func (r *AssetRepository) Create(a *models.Asset) error {
 func (r *AssetRepository) Update(a *models.Asset) error {
 	_, err := r.db.Exec(`
         UPDATE assets SET
-            description      = $1,
-            category_id      = $2,
-            asset_account_id = $3,
-            city_id          = $4,
-            area_id          = $5,
-            historical_cost  = $6,
-            physical_status  = $7,
-            logical_status   = $8
-        WHERE id = $9`,
-		a.Description, a.CategoryID, a.AssetAccountID,
+			code 			 = $1,
+            description      = $2,
+            category_id      = $3,
+            asset_account_id = $4,
+            city_id          = $5,
+            area_id          = $6,
+            historical_cost  = $7,
+            physical_status  = $8,
+            logical_status   = $9
+        WHERE id = $10`,
+		a.Code, a.Description, a.CategoryID, a.AssetAccountID,
 		a.CityID, a.AreaID, a.HistoricalCost,
 		a.PhysicalStatus, a.LogicalStatus, a.ID,
 	)
@@ -224,6 +225,7 @@ func scanAssetDetail(s scanner, a *models.AssetDetail) error {
 		&a.CategoryName,
 		&a.AccountingGroupName, &a.AccountingGroupCode,
 		&a.AccountCode, &a.OpenLedger,
-		&a.CityName, &a.AreaName,
+		&a.CityName,
+		&a.AreaName,
 	)
 }

@@ -85,6 +85,7 @@ type AssetDetail struct {
 	AccountCode         int64
 	OpenLedger          *string
 	CityName            string
+	CityID              int
 	AreaName            *string
 }
 
