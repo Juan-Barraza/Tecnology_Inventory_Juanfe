@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,7 +48,7 @@ func (s *AssetService) List(f dtos.AssetFilter) ([]dtos.AssetResponse, int, erro
 func (s *AssetService) GetByID(id string) (*dtos.AssetResponse, error) {
 	a, err := s.assetRepo.FindByID(id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("activo no encontrado")
 	}
 	if a == nil {
 		return nil, nil
@@ -114,6 +115,10 @@ func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest) (*dtos.Ass
 
 	a := &detail.Asset
 
+	if req.Code != "" {
+		a.Code = req.Code
+	}
+
 	if req.Description != nil {
 		a.Description = *req.Description
 	}
@@ -137,7 +142,7 @@ func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest) (*dtos.Ass
 	}
 
 	if err := s.assetRepo.Update(a); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error al acualizar")
 	}
 	return s.GetByID(id)
 }
@@ -230,6 +235,7 @@ func toAssetResponse(a models.AssetDetail) dtos.AssetResponse {
 		AccountCode:         a.AccountCode,
 		OpenLedger:          a.OpenLedger,
 		City:                a.CityName,
+		CityId:              a.CityID,
 		Area:                a.AreaName,
 		HistoricalCost:      a.HistoricalCost,
 		ActivationDate:      a.ActivationDate.Format(time.DateOnly),
