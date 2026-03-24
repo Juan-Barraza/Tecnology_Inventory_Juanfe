@@ -51,10 +51,3 @@ type PeriodProgressResponse struct {
 	Pending    int     `json:"pending"`
 	Percentage float64 `json:"percentage"`
 }
-
-type CounterAssetsToExport struct {
-	TotalConfirmated  int64 `json:"total_confirmated"`
-	TotalDesactivated int64 `json:"total_desactivated"`
-	TotalWithLabel    int64 `json:"total_with_label"`
-	TotalWithoutLabel int64 `json:"total_without_label"`
-}
