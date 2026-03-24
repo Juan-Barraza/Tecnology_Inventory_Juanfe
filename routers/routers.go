@@ -47,4 +47,5 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	SetInventoryRouter(protected, db)
 	SetCatalogRouter(protected, db)
 	SetDashboardRouter(protected, db)
+	SetExporterRouter(db, protected)
 }
