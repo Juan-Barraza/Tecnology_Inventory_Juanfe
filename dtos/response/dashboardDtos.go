@@ -24,6 +24,7 @@ type OpenPeriodStat struct {
 	ID          string  `json:"id"`
 	PeriodYear  int     `json:"period_year"`
 	PeriodMonth int     `json:"period_month"`
+	PeriodDay 	int 	`json:"period_day"`
 	Reviewed    int     `json:"reviewed"`
 	Total       int     `json:"total"`
 	Percentage  float64 `json:"percentage"`
@@ -32,6 +33,7 @@ type OpenPeriodStat struct {
 type ClosedPeriodStat struct {
 	PeriodYear  int `json:"period_year"`
 	PeriodMonth int `json:"period_month"`
+	PeriodDay 	int `json:"period_day"`
 }
 
 type CategoryStat struct {

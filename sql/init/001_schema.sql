@@ -73,6 +73,7 @@ CREATE TABLE assets (
     asset_account_id INT          NOT NULL REFERENCES asset_accounts(id),
     city_id          INT          NOT NULL REFERENCES cities(id),
     area_id          INT          REFERENCES areas(id),
+    owner_id         UUID         REFERENCES users(id),
     historical_cost  NUMERIC(14,2),
     activation_date  DATE         NOT NULL,
     logical_status   logical_status_enum  NOT NULL DEFAULT 'active',
@@ -120,7 +121,7 @@ CREATE TABLE inventory_periods (
     created_by   UUID NOT NULL REFERENCES users(id),
     closed_at    TIMESTAMP WITH TIME ZONE,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_period UNIQUE (period_year, period_month, period_day)
+    CONSTRAINT uq_period UNIQUE (period_year, period_month, period_day, created_by)
 );
 
 CREATE TABLE inventory_records (
