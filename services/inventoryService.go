@@ -30,8 +30,8 @@ func NewInventoryService(
 	}
 }
 
-func (s *InventoryService) ListPeriods() ([]response.InventoryPeriodResponse, error) {
-	periods, err := s.inventoryRepo.FindAllPeriods()
+func (s *InventoryService) ListPeriods(userId string) ([]response.InventoryPeriodResponse, error) {
+	periods, err := s.inventoryRepo.FindAllPeriods(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +42,8 @@ func (s *InventoryService) ListPeriods() ([]response.InventoryPeriodResponse, er
 	return result, nil
 }
 
-func (s *InventoryService) GetPeriod(id string) (*response.InventoryPeriodResponse, error) {
-	p, err := s.inventoryRepo.FindPeriodByID(id)
+func (s *InventoryService) GetPeriod(id string, userID string) (*response.InventoryPeriodResponse, error) {
+	p, err := s.inventoryRepo.FindPeriodByID(id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (s *InventoryService) GetPeriod(id string) (*response.InventoryPeriodRespon
 }
 
 func (s *InventoryService) CreatePeriod(year, month, day int, userID string) (*response.InventoryPeriodResponse, error) {
-	open, err := s.inventoryRepo.FindOpenPeriod()
+	open, err := s.inventoryRepo.FindOpenPeriod(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (s *InventoryService) CreatePeriod(year, month, day int, userID string) (*r
 		return nil, err
 	}
 
-	created, err := s.inventoryRepo.FindPeriodByID(p.ID)
+	created, err := s.inventoryRepo.FindPeriodByID(p.ID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (s *InventoryService) CreatePeriod(year, month, day int, userID string) (*r
 }
 
 func (s *InventoryService) ClosePeriod(id, userID string) error {
-	period, err := s.inventoryRepo.FindPeriodByID(id)
+	period, err := s.inventoryRepo.FindPeriodByID(id, userID)
 	if err != nil {
 		return err
 	}
@@ -94,11 +94,11 @@ func (s *InventoryService) ClosePeriod(id, userID string) error {
 	if period.Status == models.PeriodStatusClosed {
 		return errors.New("period is already closed")
 	}
-	return s.inventoryRepo.ClosePeriod(id, time.Now())
+	return s.inventoryRepo.ClosePeriod(id, time.Now(), userID)
 }
 
-func (s *InventoryService) GetRecords(periodID string) ([]response.InventoryRecordDetailResponse, error) {
-	records, err := s.inventoryRepo.FindRecordsByPeriod(periodID)
+func (s *InventoryService) GetRecords(periodID string, userId string) ([]response.InventoryRecordDetailResponse, error) {
+	records, err := s.inventoryRepo.FindRecordsByPeriod(periodID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (s *InventoryService) GetRecords(periodID string) ([]response.InventoryReco
 }
 
 func (s *InventoryService) RecordAsset(req dtos.RecordAssetRequest, userID string) error {
-	period, err := s.inventoryRepo.FindPeriodByID(req.PeriodID)
+	period, err := s.inventoryRepo.FindPeriodByID(req.PeriodID, userID)
 	if err != nil {
 		return err
 	}
@@ -180,8 +180,8 @@ func (s *InventoryService) RecordAsset(req dtos.RecordAssetRequest, userID strin
 	return nil
 }
 
-func (s *InventoryService) GetPeriodAssets(periodID string) ([]response.AssetInventoryStatusResponse, error) {
-	period, err := s.inventoryRepo.FindPeriodByID(periodID)
+func (s *InventoryService) GetPeriodAssets(periodID string, userId string) ([]response.AssetInventoryStatusResponse, error) {
+	period, err := s.inventoryRepo.FindPeriodByID(periodID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (s *InventoryService) GetPeriodAssets(periodID string) ([]response.AssetInv
 		return nil, errors.New("period not found")
 	}
 
-	assets, err := s.inventoryRepo.FindAssetsWithPeriodStatus(periodID)
+	assets, err := s.inventoryRepo.FindAssetsWithPeriodStatus(periodID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -215,8 +215,8 @@ func (s *InventoryService) GetPeriodAssets(periodID string) ([]response.AssetInv
 	return result, nil
 }
 
-func (s *InventoryService) GetProgress(periodID string) (*response.PeriodProgressResponse, error) {
-	total, reviewed, err := s.inventoryRepo.CountRecords(periodID)
+func (s *InventoryService) GetProgress(periodID, userId string) (*response.PeriodProgressResponse, error) {
+	total, reviewed, err := s.inventoryRepo.CountRecords(periodID, userId)
 	if err != nil {
 		return nil, err
 	}
