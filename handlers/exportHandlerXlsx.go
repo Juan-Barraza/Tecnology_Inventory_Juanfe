@@ -23,8 +23,10 @@ func (h *ExportHandlerXlsx) ExportXlsx(c fiber.Ctx) error {
 	exportType := c.Query("export_type")
 	yearstr := c.Query("year")
 	monthStr := c.Query("month")
+	dayStr := c.Query("day")
 	var year int
 	var month int
+	var day int
 	var err error
 
 	if yearstr != "" {
@@ -43,8 +45,16 @@ func (h *ExportHandlerXlsx) ExportXlsx(c fiber.Ctx) error {
 			})
 		}
 	}
+	if dayStr != "" {
+		day, err = strconv.Atoi(dayStr)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "error al parsear query",
+			})
+		}
+	}
 
-	fileXlsx, err := h.service.ExportToXlsx(year, month, xlsx.ExportType(exportType))
+	fileXlsx, err := h.service.ExportToXlsx(year, month, day, xlsx.ExportType(exportType))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

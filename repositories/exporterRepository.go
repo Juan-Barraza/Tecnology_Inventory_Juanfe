@@ -14,7 +14,7 @@ func NewExporterRepository(db *sql.DB) *ExporterRepository {
 	return &ExporterRepository{db: db}
 }
 
-func (r *ExporterRepository) GetAssetsWithDate(year, month int) ([]models.AssetExport, error) {
+func (r *ExporterRepository) GetAssetsWithDate(year, month, day int) ([]models.AssetExport, error) {
 	assets := []models.AssetExport{}
 	query := `
 		 SELECT 
@@ -31,6 +31,7 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month int) ([]models.AssetE
 			COALESCE(r.responsible_position, ''),
 			p.period_year,
 			p.period_month,
+			p.period_day,
 			asac.code as accounting_group,
 			acg.account_code as sub_code,
 			ir.confirmed ,
@@ -45,10 +46,10 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month int) ([]models.AssetE
 		JOIN inventory_periods p on ir.period_id = p.id
 		JOIN asset_accounts acg on acg.id = a.asset_account_id
 		JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
-		WHERE p.period_year = $1 AND p.period_month = $2
+		WHERE p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3
 		ORDER BY a.activation_date desc
 	`
-	rows, err := r.db.Query(query, year, month)
+	rows, err := r.db.Query(query, year, month, day)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +71,7 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month int) ([]models.AssetE
 			&a.ResponsiblePosition,
 			&a.PeriodYear,
 			&a.PeriodMonth,
+			&a.PeriodDay,
 			&a.AccountCodeGroup,
 			&a.SubCode,
 			&a.Confirmed,
@@ -149,7 +151,7 @@ func (r *ExporterRepository) GetAssetsToExport() ([]models.AssetExport, error) {
 }
 
 // posible error de direccion de memoria
-func (r *ExporterRepository) CountAssetsConfirmatedAndDesactivated(year, month int) (*dtos.CounterAssetsToExport, error) {
+func (r *ExporterRepository) CountAssetsConfirmatedAndDesactivated(year, month, day int) (*dtos.CounterAssetsToExport, error) {
 	var responseQ dtos.CounterAssetsToExport
 	query := `
 		SELECT 
@@ -159,9 +161,9 @@ func (r *ExporterRepository) CountAssetsConfirmatedAndDesactivated(year, month i
 			COALESCE(SUM(case when ir.has_label = false then 1 else 0 end), 0) AS total_without_label
 		FROM inventory_records ir
 		JOIN inventory_periods p on ir.period_id = p.id
-		WHERE p.period_year = $1 and p.period_month = $2
+		WHERE p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3
 	`
-	err := r.db.QueryRow(query, year, month).
+	err := r.db.QueryRow(query, year, month, day).
 		Scan(
 			&responseQ.TotalConfirmated,
 			&responseQ.TotalDesactivated,

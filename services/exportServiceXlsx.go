@@ -18,16 +18,16 @@ func NewExportAssetsToXlsx(repoExpo *repository.ExporterRepository) *ExportAsset
 	return &ExportAssetsToXlsx{repoExpo: repoExpo}
 }
 
-func (s *ExportAssetsToXlsx) ExportToXlsx(year, month int, exportType xlsx.ExportType) (*excelize.File, error) {
+func (s *ExportAssetsToXlsx) ExportToXlsx(year, month, day int, exportType xlsx.ExportType) (*excelize.File, error) {
 	var err error
 	var countersResults *dtos.CounterAssetsToExport
 	var assets = []models.AssetExport{}
 	if exportType == xlsx.ExportTypeAudit {
-		assets, err = s.repoExpo.GetAssetsWithDate(year, month)
+		assets, err = s.repoExpo.GetAssetsWithDate(year, month, day)
 		if err != nil {
 			return nil, fmt.Errorf("error to get assets")
 		}
-		countersResults, err = s.repoExpo.CountAssetsConfirmatedAndDesactivated(year, month)
+		countersResults, err = s.repoExpo.CountAssetsConfirmatedAndDesactivated(year, month, day)
 		if err != nil {
 			return nil, fmt.Errorf("error to get totals counters")
 		}

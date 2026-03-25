@@ -17,6 +17,7 @@ var baseHeaders = []string{
 }
 
 var auditHeaders = []string{
+	"period_day",
 	"period_year",
 	"period_month",
 	"confirmed",

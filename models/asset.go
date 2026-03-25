@@ -52,6 +52,7 @@ type AssetExport struct {
 	ResponsiblePosition string
 	PeriodYear          *int
 	PeriodMonth         *int
+	PeriodDay           *int
 	AccountCodeGroup    int64
 	SubCode             int64
 	Confirmed           *bool
