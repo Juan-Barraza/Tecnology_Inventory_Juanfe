@@ -136,7 +136,7 @@ func (s *InventoryService) RecordAsset(req dtos.RecordAssetRequest, userID strin
 		return errors.New("cannot modify a closed period")
 	}
 
-	asset, err := s.assetRepo.FindByID(req.AssetID)
+	asset, err := s.assetRepo.FindByID(req.AssetID, userID)
 	if err != nil {
 		return err
 	}

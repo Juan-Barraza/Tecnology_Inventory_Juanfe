@@ -26,6 +26,7 @@ type Asset struct {
 	ID             string
 	Code           string
 	Description    string
+	OwnerId		   string
 	CategoryID     int
 	AssetAccountID int
 	CityID         int
@@ -59,22 +60,6 @@ type AssetExport struct {
 	Deactivated         *bool
 	HasLabel            *bool
 }
-
-// type AssetExport struct {
-// 	Code                string
-// 	Description         string
-// 	HistoricalCost      *float64
-// 	ActivationDate      time.Time
-// 	LogicalStatus       LogicalStatus
-// 	PhysicalStatus      PhysicalStatus
-// 	CategoryName        string
-// 	AreaName            string
-// 	CityName            string
-// 	ResponsibleName     string
-// 	ResponsiblePosition string
-// 	AccountCodeGroup    int64
-// 	SubCode             int64
-// }
 
 // AssetDetail is used for list/detail queries with joined fields
 // so handlers never need to do extra lookups

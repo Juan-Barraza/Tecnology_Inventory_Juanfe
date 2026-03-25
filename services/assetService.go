@@ -32,8 +32,8 @@ func NewAssetService(
 	}
 }
 
-func (s *AssetService) List(f dtos.AssetFilter) ([]dtos.AssetResponse, int, error) {
-	assets, total, err := s.assetRepo.FindAll(f)
+func (s *AssetService) List(f dtos.AssetFilter, userId string) ([]dtos.AssetResponse, int, error) {
+	assets, total, err := s.assetRepo.FindAll(f, userId)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -45,8 +45,8 @@ func (s *AssetService) List(f dtos.AssetFilter) ([]dtos.AssetResponse, int, erro
 	return resp, total, nil
 }
 
-func (s *AssetService) GetByID(id string) (*dtos.AssetResponse, error) {
-	a, err := s.assetRepo.FindByID(id)
+func (s *AssetService) GetByID(id, userId string) (*dtos.AssetResponse, error) {
+	a, err := s.assetRepo.FindByID(id, userId)
 	if err != nil {
 		return nil, fmt.Errorf("activo no encontrado")
 	}
@@ -79,6 +79,7 @@ func (s *AssetService) Create(req dtos.CreateAssetRequest, userID string) (*dtos
 		ID:             uuid.NewString(),
 		Code:           req.Code,
 		Description:    req.Description,
+		OwnerId:        userID,
 		CategoryID:     req.CategoryID,
 		AssetAccountID: req.AssetAccountID,
 		CityID:         req.CityID,
@@ -101,11 +102,11 @@ func (s *AssetService) Create(req dtos.CreateAssetRequest, userID string) (*dtos
 		RecordedBy: userID,
 	})
 
-	return s.GetByID(asset.ID)
+	return s.GetByID(asset.ID, userID)
 }
 
-func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest) (*dtos.AssetResponse, error) {
-	detail, err := s.assetRepo.FindByID(id)
+func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest, userId string) (*dtos.AssetResponse, error) {
+	detail, err := s.assetRepo.FindByID(id, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -144,13 +145,13 @@ func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest) (*dtos.Ass
 	if err := s.assetRepo.Update(a); err != nil {
 		return nil, fmt.Errorf("error al acualizar")
 	}
-	return s.GetByID(id)
+	return s.GetByID(id, userId)
 }
 
 // ChangeStatus updates logical/physical status.
 // Field-level validations are handled by the handler via utils.ValidateUpdateAssetStatus.
 func (s *AssetService) ChangeStatus(id string, req dtos.UpdateAssetStatusRequest, userID string) (*dtos.AssetResponse, error) {
-	detail, err := s.assetRepo.FindByID(id)
+	detail, err := s.assetRepo.FindByID(id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +193,7 @@ func (s *AssetService) ChangeStatus(id string, req dtos.UpdateAssetStatusRequest
 		}
 	}
 
-	return s.GetByID(id)
+	return s.GetByID(id, userID)
 }
 
 func (s *AssetService) GetHistory(assetID string) ([]response.StatusHistoryResponse, error) {

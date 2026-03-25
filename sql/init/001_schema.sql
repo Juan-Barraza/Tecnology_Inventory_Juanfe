@@ -139,6 +139,7 @@ CREATE TABLE inventory_records (
 
 -- ── Indexes ───────────────────────────────────────────────────
 CREATE INDEX idx_assets_code             ON assets(code);
+CREATE INDEX idx_assets_owner ON assets(owner_id);
 CREATE INDEX idx_assets_logical_status   ON assets(logical_status);
 CREATE INDEX idx_assets_physical_status  ON assets(physical_status);
 CREATE INDEX idx_assets_activation_date  ON assets(activation_date);
