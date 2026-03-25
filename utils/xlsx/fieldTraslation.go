@@ -12,6 +12,7 @@ var inventoryFieldTranslations = map[string]string{
 	"city":                 "Ciudad",
 	"responsible_name":     "Responsable",
 	"responsible_position": "Cargo del Responsable",
+	"period_day":           "Dia del periodo",
 	"period_year":          "Año del Período",
 	"period_month":         "Mes del Período",
 	"accounting_group":     "Grupo Contable",

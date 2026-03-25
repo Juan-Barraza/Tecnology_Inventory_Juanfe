@@ -15,11 +15,20 @@ func NewInventoryRepository(db *sql.DB) *InventoryRepository {
 	return &InventoryRepository{db: db}
 }
 
-func (r *InventoryRepository) FindAllPeriods() ([]models.InventoryPeriod, error) {
+func (r *InventoryRepository) FindAllPeriods(created_by string) ([]models.InventoryPeriod, error) {
 	rows, err := r.db.Query(`
-        SELECT id, period_year, period_month, status, created_by, closed_at, created_at
+        SELECT 
+			id, 
+			period_year, 
+			period_month, 
+			period_day, 
+			status, 
+			created_by, 
+			closed_at, 
+			created_at
         FROM inventory_periods
-        ORDER BY period_year DESC, period_month DESC`)
+		WHERE created_by = $1
+        ORDER BY period_year DESC, period_month DESC, period_day DESC`, created_by)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +39,7 @@ func (r *InventoryRepository) FindAllPeriods() ([]models.InventoryPeriod, error)
 		var p models.InventoryPeriod
 		if err := rows.Scan(
 			&p.ID, &p.PeriodYear, &p.PeriodMonth,
+			&p.PeriodDay,
 			&p.Status, &p.CreatedBy, &p.ClosedAt, &p.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -39,13 +49,22 @@ func (r *InventoryRepository) FindAllPeriods() ([]models.InventoryPeriod, error)
 	return periods, rows.Err()
 }
 
-func (r *InventoryRepository) FindPeriodByID(id string) (*models.InventoryPeriod, error) {
+func (r *InventoryRepository) FindPeriodByID(id string, created_by string) (*models.InventoryPeriod, error) {
 	var p models.InventoryPeriod
 	err := r.db.QueryRow(`
-        SELECT id, period_year, period_month, status, created_by, closed_at, created_at
+        SELECT 
+			id,
+			period_year, 
+			period_month, 
+			period_day, 
+			status, 
+			created_by, 
+			closed_at,
+			created_at
         FROM inventory_periods
-        WHERE id = $1`, id).Scan(
+        WHERE id = $1 AND created_by = $2`, id, created_by).Scan(
 		&p.ID, &p.PeriodYear, &p.PeriodMonth,
+		&p.PeriodDay,
 		&p.Status, &p.CreatedBy, &p.ClosedAt, &p.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -54,14 +73,15 @@ func (r *InventoryRepository) FindPeriodByID(id string) (*models.InventoryPeriod
 	return &p, err
 }
 
-func (r *InventoryRepository) FindOpenPeriod() (*models.InventoryPeriod, error) {
+func (r *InventoryRepository) FindOpenPeriod(created_by string) (*models.InventoryPeriod, error) {
 	var p models.InventoryPeriod
 	err := r.db.QueryRow(`
-        SELECT id, period_year, period_month, status, created_by, closed_at, created_at
+        SELECT id, period_year, period_month, period_day, status, created_by, closed_at, created_at
         FROM inventory_periods
-        WHERE status = 'open'
-        LIMIT 1`).Scan(
+        WHERE status = 'open' AND created_by = $1
+        LIMIT 1`, created_by).Scan(
 		&p.ID, &p.PeriodYear, &p.PeriodMonth,
+		&p.PeriodDay,
 		&p.Status, &p.CreatedBy, &p.ClosedAt, &p.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -72,24 +92,24 @@ func (r *InventoryRepository) FindOpenPeriod() (*models.InventoryPeriod, error) 
 
 func (r *InventoryRepository) CreatePeriod(p *models.InventoryPeriod) error {
 	_, err := r.db.Exec(`
-        INSERT INTO inventory_periods (id, period_year, period_month, status, created_by)
-        VALUES ($1, $2, $3, 'open', $4)`,
-		p.ID, p.PeriodYear, p.PeriodMonth, p.CreatedBy,
+        INSERT INTO inventory_periods (id, period_year, period_month, period_day, status, created_by)
+        VALUES ($1, $2, $3, $4, 'open', $5)`,
+		p.ID, p.PeriodYear, p.PeriodMonth, p.PeriodDay, p.CreatedBy,
 	)
 	return err
 }
 
-func (r *InventoryRepository) ClosePeriod(id string, closedAt time.Time) error {
+func (r *InventoryRepository) ClosePeriod(id string, closedAt time.Time, created_by string) error {
 	_, err := r.db.Exec(`
         UPDATE inventory_periods
         SET status = 'closed', closed_at = $1
-        WHERE id = $2`,
-		closedAt, id,
+        WHERE id = $2 AND created_by = $3`,
+		closedAt, id, created_by,
 	)
 	return err
 }
 
-func (r *InventoryRepository) FindRecordsByPeriod(periodID string) ([]models.InventoryRecordDetail, error) {
+func (r *InventoryRepository) FindRecordsByPeriod(periodID string, ownerId string) ([]models.InventoryRecordDetail, error) {
 	rows, err := r.db.Query(`
         SELECT
             ir.id, ir.period_id, ir.asset_id,
@@ -108,8 +128,8 @@ func (r *InventoryRepository) FindRecordsByPeriod(periodID string) ([]models.Inv
         JOIN cities          c  ON c.id  = a.city_id
         LEFT JOIN areas      ar ON ar.id = a.area_id
         JOIN users           u  ON u.id  = ir.recorded_by
-        WHERE ir.period_id = $1
-        ORDER BY ir.recorded_at DESC`, periodID)
+        WHERE ir.period_id = $1 AND a.owner_id = $2
+        ORDER BY ir.recorded_at DESC`, periodID, ownerId)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +190,7 @@ func (r *InventoryRepository) UpsertRecord(rec *models.InventoryRecord) error {
 }
 
 // CountRecords devuelve total de activos activos y cuántos fueron revisados en el período
-func (r *InventoryRepository) CountRecords(periodID string) (total int, reviewed int, err error) {
+func (r *InventoryRepository) CountRecords(periodID string, ownerId string) (total int, reviewed int, err error) {
 	err = r.db.QueryRow(`
         SELECT
             COUNT(DISTINCT a.id)                                    AS total,
@@ -179,18 +199,16 @@ func (r *InventoryRepository) CountRecords(periodID string) (total int, reviewed
         LEFT JOIN inventory_records ir
             ON ir.asset_id  = a.id
             AND ir.period_id = $1
-        WHERE a.logical_status IN ('active', 'written_off')
-            AND (
-                a.logical_status = 'active'
-                OR ir.id IS NOT NULL
-            )`, periodID,
+        WHERE a.owner_id = $2
+			AND ( a.logical_status IN ('active', 'written_off'))
+            AND (a.logical_status = 'active' OR ir.id IS NOT NULL)`, periodID, ownerId,
 	).Scan(&total, &reviewed)
 	return
 }
 
 // FindAssetsWithPeriodStatus devuelve todos los activos activos
 // con su estado en el período (NULL si no fue revisado aún)
-func (r *InventoryRepository) FindAssetsWithPeriodStatus(periodID string) ([]models.AssetInventoryStatus, error) {
+func (r *InventoryRepository) FindAssetsWithPeriodStatus(periodID string, ownerId string) ([]models.AssetInventoryStatus, error) {
 	rows, err := r.db.Query(`
         SELECT
             a.id          AS asset_id,
@@ -213,10 +231,11 @@ func (r *InventoryRepository) FindAssetsWithPeriodStatus(periodID string) ([]mod
         LEFT JOIN inventory_records ir
             ON ir.asset_id  = a.id
             AND ir.period_id = $1
-        WHERE a.logical_status = 'active'
-           OR (a.logical_status = 'written_off' AND ir.id IS NOT NULL)
+        WHERE a.owner_id = $2
+			AND ( a.logical_status = 'active'
+          	 OR (a.logical_status = 'written_off' AND ir.id IS NOT NULL))
         ORDER BY ir.id NULLS LAST, a.code`,
-		periodID,
+		periodID, ownerId,
 	)
 	if err != nil {
 		return nil, err

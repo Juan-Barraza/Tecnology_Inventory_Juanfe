@@ -42,7 +42,7 @@ func (s *AssignmentService) GetByAsset(assetID string) ([]dtos.AssignmentRespons
 // Create persists a new assignment.
 // Field-level validations are handled by the handler via utils.ValidateCreateAssignment.
 func (s *AssignmentService) Create(req dtos.CreateAssignmentRequest, userID string) (*dtos.AssignmentResponse, error) {
-	asset, err := s.assetRepo.FindByID(req.AssetID)
+	asset, err := s.assetRepo.FindByID(req.AssetID, userID)
 	if err != nil {
 		return nil, err
 	}

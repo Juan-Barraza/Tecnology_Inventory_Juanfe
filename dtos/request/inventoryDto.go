@@ -3,6 +3,7 @@ package dtos
 type CreatePeriodRequest struct {
 	PeriodYear  int `json:"period_year"`
 	PeriodMonth int `json:"period_month"`
+	PeriodDay   int `json:"period_day"`
 }
 
 type RecordAssetRequest struct {

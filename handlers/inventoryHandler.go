@@ -19,7 +19,8 @@ func NewInventoryHandler(svc *services.InventoryService) *InventoryHandler {
 }
 
 func (h *InventoryHandler) ListPeriods(c fiber.Ctx) error {
-	periods, err := h.svc.ListPeriods()
+	userId := utils.GetUserID(c)
+	periods, err := h.svc.ListPeriods(userId)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, "could not fetch periods")
 	}
@@ -37,7 +38,7 @@ func (h *InventoryHandler) CreatePeriod(c fiber.Ctx) error {
 	}
 
 	userID := utils.GetUserID(c)
-	period, err := h.svc.CreatePeriod(req.PeriodYear, req.PeriodMonth, userID)
+	period, err := h.svc.CreatePeriod(req.PeriodYear, req.PeriodMonth, req.PeriodDay, userID)
 	if err != nil {
 		return utils.Error(c, http.StatusBadRequest, err.Error())
 	}
@@ -56,7 +57,8 @@ func (h *InventoryHandler) ClosePeriod(c fiber.Ctx) error {
 
 func (h *InventoryHandler) GetRecords(c fiber.Ctx) error {
 	periodID := c.Params("id")
-	records, err := h.svc.GetRecords(periodID)
+	userId := utils.GetUserID(c)
+	records, err := h.svc.GetRecords(periodID, userId)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, "could not fetch records")
 	}
@@ -82,7 +84,8 @@ func (h *InventoryHandler) RecordAsset(c fiber.Ctx) error {
 
 func (h *InventoryHandler) GetProgress(c fiber.Ctx) error {
 	periodID := c.Params("id")
-	progress, err := h.svc.GetProgress(periodID)
+	userId := utils.GetUserID(c)
+	progress, err := h.svc.GetProgress(periodID, userId)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, "could not fetch progress")
 	}
@@ -94,7 +97,8 @@ func (h *InventoryHandler) GetPeriodAssets(c fiber.Ctx) error {
 	if periodID == "" {
 		return utils.Error(c, http.StatusBadRequest, "period id is required")
 	}
-	assets, err := h.svc.GetPeriodAssets(periodID)
+	userId := utils.GetUserID(c)
+	assets, err := h.svc.GetPeriodAssets(periodID, userId)
 	if err != nil {
 		return utils.Error(c, http.StatusBadRequest, err.Error())
 	}

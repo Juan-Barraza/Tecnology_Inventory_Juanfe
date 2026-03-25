@@ -50,7 +50,11 @@ func ElectionFieldsAsset(asset models.AssetExport, cell, sheetName, field string
 	case "sub_code":
 		file.SetCellValue(sheetName, cell, fmt.Sprintf("%d", asset.SubCode))
 
-	// ── Campos de auditoría — solo presentes en ExportTypeAudit ──
+		// ── Campos de auditoría — solo presentes en ExportTypeAudit ──
+	case "period_day":
+		if asset.PeriodDay != nil {
+			file.SetCellValue(sheetName, cell, *asset.PeriodDay)
+		}
 	case "period_year":
 		if asset.PeriodYear != nil {
 			file.SetCellValue(sheetName, cell, *asset.PeriodYear)

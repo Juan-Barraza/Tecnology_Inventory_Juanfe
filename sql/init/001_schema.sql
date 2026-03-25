@@ -73,6 +73,7 @@ CREATE TABLE assets (
     asset_account_id INT          NOT NULL REFERENCES asset_accounts(id),
     city_id          INT          NOT NULL REFERENCES cities(id),
     area_id          INT          REFERENCES areas(id),
+    owner_id         UUID         REFERENCES users(id),
     historical_cost  NUMERIC(14,2),
     activation_date  DATE         NOT NULL,
     logical_status   logical_status_enum  NOT NULL DEFAULT 'active',
@@ -113,13 +114,14 @@ CREATE TABLE status_history (
 
 CREATE TABLE inventory_periods (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    period_year  INT  NOT NULL,
-    period_month INT  NOT NULL CHECK (period_month BETWEEN 1 AND 12),
+    period_year  INT NOT NULL,
+    period_month INT NOT NULL CHECK (period_month BETWEEN 1 AND 12),
+    period_day   INT NOT NULL CHECK (period_day BETWEEN 1 AND 31),
     status       period_status_enum NOT NULL DEFAULT 'open',
     created_by   UUID NOT NULL REFERENCES users(id),
     closed_at    TIMESTAMP WITH TIME ZONE,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_period UNIQUE (period_year, period_month)
+    CONSTRAINT uq_period UNIQUE (period_year, period_month, period_day, created_by)
 );
 
 CREATE TABLE inventory_records (
@@ -137,6 +139,7 @@ CREATE TABLE inventory_records (
 
 -- ── Indexes ───────────────────────────────────────────────────
 CREATE INDEX idx_assets_code             ON assets(code);
+CREATE INDEX idx_assets_owner ON assets(owner_id);
 CREATE INDEX idx_assets_logical_status   ON assets(logical_status);
 CREATE INDEX idx_assets_physical_status  ON assets(physical_status);
 CREATE INDEX idx_assets_activation_date  ON assets(activation_date);

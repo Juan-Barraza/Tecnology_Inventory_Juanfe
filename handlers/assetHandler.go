@@ -31,8 +31,8 @@ func (h *AssetHandler) List(c fiber.Ctx) error {
 	if f.Page <= 0 {
 		f.Page = 1
 	}
-
-	assets, total, err := h.svc.List(f)
+	userID := utils.GetUserID(c)
+	assets, total, err := h.svc.List(f, userID)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, "could not fetch assets")
 	}
@@ -42,8 +42,8 @@ func (h *AssetHandler) List(c fiber.Ctx) error {
 
 func (h *AssetHandler) GetByID(c fiber.Ctx) error {
 	id := c.Params("id")
-
-	asset, err := h.svc.GetByID(id)
+	userId := utils.GetUserID(c)
+	asset, err := h.svc.GetByID(id, userId)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, "could not fetch asset")
 	}
@@ -80,8 +80,8 @@ func (h *AssetHandler) Update(c fiber.Ctx) error {
 	if err := c.Bind().JSON(&req); err != nil {
 		return utils.Error(c, http.StatusBadRequest, "invalid request body")
 	}
-
-	asset, err := h.svc.Update(id, req)
+	userId := utils.GetUserID(c)
+	asset, err := h.svc.Update(id, req, userId)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, err.Error())
 	}

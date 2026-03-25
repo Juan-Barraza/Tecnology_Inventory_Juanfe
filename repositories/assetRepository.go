@@ -38,8 +38,8 @@ const assetSelectBase = `
     JOIN cities            c  ON c.id   = a.city_id
     LEFT JOIN areas        ar ON ar.id  = a.area_id`
 
-func (r *AssetRepository) FindAll(f dtos.AssetFilter) ([]models.AssetDetail, int, error) {
-	where, args := buildAssetWhere(f)
+func (r *AssetRepository) FindAll(f dtos.AssetFilter, ownerId string) ([]models.AssetDetail, int, error) {
+	where, args := buildAssetWhere(f, ownerId)
 
 	var total int
 	if err := r.db.QueryRow(
@@ -80,8 +80,8 @@ func (r *AssetRepository) FindAll(f dtos.AssetFilter) ([]models.AssetDetail, int
 	return assets, total, rows.Err()
 }
 
-func (r *AssetRepository) FindByID(id string) (*models.AssetDetail, error) {
-	row := r.db.QueryRow(assetSelectBase+" WHERE a.id = $1", id)
+func (r *AssetRepository) FindByID(id, owner_id string) (*models.AssetDetail, error) {
+	row := r.db.QueryRow(assetSelectBase+" WHERE a.id = $1 AND a.owner_id = $2", id, owner_id)
 	var a models.AssetDetail
 	if err := scanAssetDetail(row, &a); err != nil {
 		if err == sql.ErrNoRows {
@@ -113,11 +113,11 @@ func (r *AssetRepository) FindByCode(code string) (*models.Asset, error) {
 func (r *AssetRepository) Create(a *models.Asset) error {
 	_, err := r.db.Exec(`
         INSERT INTO assets
-            (id, code, description, category_id, asset_account_id,
+            (id, code, description, owner_id, category_id, asset_account_id,
              city_id, area_id, historical_cost, activation_date,
              logical_status, physical_status)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-		a.ID, a.Code, a.Description, a.CategoryID, a.AssetAccountID,
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+		a.ID, a.Code, a.Description, a.OwnerId, a.CategoryID, a.AssetAccountID,
 		a.CityID, a.AreaID, a.HistoricalCost, a.ActivationDate,
 		a.LogicalStatus, a.PhysicalStatus,
 	)
@@ -152,11 +152,16 @@ func (r *AssetRepository) UpdateStatus(id string, logical models.LogicalStatus, 
 	return err
 }
 
-func buildAssetWhere(f dtos.AssetFilter) (string, []interface{}) {
+func buildAssetWhere(f dtos.AssetFilter, ownerId string) (string, []interface{}) {
 	var conds []string
 	var args []interface{}
 	n := 1
 
+	if ownerId != "" {
+		conds = append(conds, fmt.Sprintf("a.owner_id = $%d", n))
+		args = append(args, ownerId)
+		n++
+	}
 	if f.CityID != nil {
 		conds = append(conds, fmt.Sprintf("a.city_id = $%d", n))
 		args = append(args, *f.CityID)

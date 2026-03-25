@@ -18,7 +18,8 @@ func NewDashboardHandler(svc *services.DashboardService) *DashboardHandler {
 }
 
 func (h *DashboardHandler) GetDashboard(c fiber.Ctx) error {
-	data, err := h.svc.GetDashboard()
+	userID := utils.GetUserID(c)
+	data, err := h.svc.GetDashboard(userID)
 	if err != nil {
 		return utils.Error(c, http.StatusInternalServerError, "could not fetch dashboard data")
 	}
