@@ -113,13 +113,14 @@ CREATE TABLE status_history (
 
 CREATE TABLE inventory_periods (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    period_year  INT  NOT NULL,
-    period_month INT  NOT NULL CHECK (period_month BETWEEN 1 AND 12),
+    period_year  INT NOT NULL,
+    period_month INT NOT NULL CHECK (period_month BETWEEN 1 AND 12),
+    period_day   INT NOT NULL CHECK (period_day BETWEEN 1 AND 31),
     status       period_status_enum NOT NULL DEFAULT 'open',
     created_by   UUID NOT NULL REFERENCES users(id),
     closed_at    TIMESTAMP WITH TIME ZONE,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_period UNIQUE (period_year, period_month)
+    CONSTRAINT uq_period UNIQUE (period_year, period_month, period_day)
 );
 
 CREATE TABLE inventory_records (

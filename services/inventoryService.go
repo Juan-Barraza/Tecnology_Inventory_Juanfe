@@ -54,7 +54,7 @@ func (s *InventoryService) GetPeriod(id string) (*response.InventoryPeriodRespon
 	return &r, nil
 }
 
-func (s *InventoryService) CreatePeriod(year, month int, userID string) (*response.InventoryPeriodResponse, error) {
+func (s *InventoryService) CreatePeriod(year, month, day int, userID string) (*response.InventoryPeriodResponse, error) {
 	open, err := s.inventoryRepo.FindOpenPeriod()
 	if err != nil {
 		return nil, err
@@ -67,6 +67,7 @@ func (s *InventoryService) CreatePeriod(year, month int, userID string) (*respon
 		ID:          uuid.NewString(),
 		PeriodYear:  year,
 		PeriodMonth: month,
+		PeriodDay:   day,
 		CreatedBy:   userID,
 	}
 
@@ -241,6 +242,7 @@ func toPeriodResponse(p models.InventoryPeriod) response.InventoryPeriodResponse
 		ID:          p.ID,
 		PeriodYear:  p.PeriodYear,
 		PeriodMonth: p.PeriodMonth,
+		PeriodDay:   p.PeriodDay,
 		Status:      string(p.Status),
 		CreatedBy:   p.CreatedBy,
 		ClosedAt:    p.ClosedAt,

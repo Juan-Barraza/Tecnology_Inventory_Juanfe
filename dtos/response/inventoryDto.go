@@ -6,6 +6,7 @@ type InventoryPeriodResponse struct {
 	ID          string     `json:"id"`
 	PeriodYear  int        `json:"period_year"`
 	PeriodMonth int        `json:"period_month"`
+	PeriodDay   int        `json:"period_day"`
 	Status      string     `json:"status"`
 	CreatedBy   string     `json:"created_by"`
 	ClosedAt    *time.Time `json:"closed_at"`

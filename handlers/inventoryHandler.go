@@ -37,7 +37,7 @@ func (h *InventoryHandler) CreatePeriod(c fiber.Ctx) error {
 	}
 
 	userID := utils.GetUserID(c)
-	period, err := h.svc.CreatePeriod(req.PeriodYear, req.PeriodMonth, userID)
+	period, err := h.svc.CreatePeriod(req.PeriodYear, req.PeriodMonth, req.PeriodDay, userID)
 	if err != nil {
 		return utils.Error(c, http.StatusBadRequest, err.Error())
 	}

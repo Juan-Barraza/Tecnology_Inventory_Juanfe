@@ -17,9 +17,9 @@ func NewInventoryRepository(db *sql.DB) *InventoryRepository {
 
 func (r *InventoryRepository) FindAllPeriods() ([]models.InventoryPeriod, error) {
 	rows, err := r.db.Query(`
-        SELECT id, period_year, period_month, status, created_by, closed_at, created_at
+        SELECT id, period_year, period_month, period_day, status, created_by, closed_at, created_at
         FROM inventory_periods
-        ORDER BY period_year DESC, period_month DESC`)
+        ORDER BY period_year DESC, period_month DESC, period_day DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +30,7 @@ func (r *InventoryRepository) FindAllPeriods() ([]models.InventoryPeriod, error)
 		var p models.InventoryPeriod
 		if err := rows.Scan(
 			&p.ID, &p.PeriodYear, &p.PeriodMonth,
+			&p.PeriodDay,
 			&p.Status, &p.CreatedBy, &p.ClosedAt, &p.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -42,10 +43,11 @@ func (r *InventoryRepository) FindAllPeriods() ([]models.InventoryPeriod, error)
 func (r *InventoryRepository) FindPeriodByID(id string) (*models.InventoryPeriod, error) {
 	var p models.InventoryPeriod
 	err := r.db.QueryRow(`
-        SELECT id, period_year, period_month, status, created_by, closed_at, created_at
+        SELECT id, period_year, period_month, period_day, status, created_by, closed_at, created_at
         FROM inventory_periods
         WHERE id = $1`, id).Scan(
 		&p.ID, &p.PeriodYear, &p.PeriodMonth,
+		&p.PeriodDay,
 		&p.Status, &p.CreatedBy, &p.ClosedAt, &p.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -57,11 +59,12 @@ func (r *InventoryRepository) FindPeriodByID(id string) (*models.InventoryPeriod
 func (r *InventoryRepository) FindOpenPeriod() (*models.InventoryPeriod, error) {
 	var p models.InventoryPeriod
 	err := r.db.QueryRow(`
-        SELECT id, period_year, period_month, status, created_by, closed_at, created_at
+        SELECT id, period_year, period_month, period_day, status, created_by, closed_at, created_at
         FROM inventory_periods
         WHERE status = 'open'
         LIMIT 1`).Scan(
 		&p.ID, &p.PeriodYear, &p.PeriodMonth,
+		&p.PeriodDay,
 		&p.Status, &p.CreatedBy, &p.ClosedAt, &p.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -72,9 +75,9 @@ func (r *InventoryRepository) FindOpenPeriod() (*models.InventoryPeriod, error) 
 
 func (r *InventoryRepository) CreatePeriod(p *models.InventoryPeriod) error {
 	_, err := r.db.Exec(`
-        INSERT INTO inventory_periods (id, period_year, period_month, status, created_by)
-        VALUES ($1, $2, $3, 'open', $4)`,
-		p.ID, p.PeriodYear, p.PeriodMonth, p.CreatedBy,
+        INSERT INTO inventory_periods (id, period_year, period_month, period_day, status, created_by)
+        VALUES ($1, $2, $3, $4, 'open', $5)`,
+		p.ID, p.PeriodYear, p.PeriodMonth, p.PeriodDay, p.CreatedBy,
 	)
 	return err
 }

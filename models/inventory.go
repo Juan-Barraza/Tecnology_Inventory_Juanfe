@@ -13,6 +13,7 @@ type InventoryPeriod struct {
 	ID          string
 	PeriodYear  int
 	PeriodMonth int
+	PeriodDay   int
 	Status      PeriodStatus
 	CreatedBy   string
 	ClosedAt    *time.Time
