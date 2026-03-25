@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"inventory-juanfe/services"
 	"inventory-juanfe/utils/xlsx"
+	"inventory-juanfe/utils"
 	"log"
 	"strconv"
 	"time"
@@ -54,7 +55,8 @@ func (h *ExportHandlerXlsx) ExportXlsx(c fiber.Ctx) error {
 		}
 	}
 
-	fileXlsx, err := h.service.ExportToXlsx(year, month, day, xlsx.ExportType(exportType))
+	userId := utils.GetUserID(c)
+	fileXlsx, err := h.service.ExportToXlsx(year, month, day, xlsx.ExportType(exportType), userId)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

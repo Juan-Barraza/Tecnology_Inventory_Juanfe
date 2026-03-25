@@ -14,7 +14,7 @@ func NewExporterRepository(db *sql.DB) *ExporterRepository {
 	return &ExporterRepository{db: db}
 }
 
-func (r *ExporterRepository) GetAssetsWithDate(year, month, day int) ([]models.AssetExport, error) {
+func (r *ExporterRepository) GetAssetsWithDate(year, month, day int, ownerId string) ([]models.AssetExport, error) {
 	assets := []models.AssetExport{}
 	query := `
 		 SELECT 
@@ -46,10 +46,11 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month, day int) ([]models.A
 		JOIN inventory_periods p on ir.period_id = p.id
 		JOIN asset_accounts acg on acg.id = a.asset_account_id
 		JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
-		WHERE p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3
+		WHERE a.owner_id = $4 AND 
+		(p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3)
 		ORDER BY a.activation_date desc
 	`
-	rows, err := r.db.Query(query, year, month, day)
+	rows, err := r.db.Query(query, year, month, day, ownerId)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month, day int) ([]models.A
 	return assets, nil
 }
 
-func (r *ExporterRepository) GetAssetsToExport() ([]models.AssetExport, error) {
+func (r *ExporterRepository) GetAssetsToExport(ownerId string) ([]models.AssetExport, error) {
 	assests := []models.AssetExport{}
 	query := `
 			SELECT 
@@ -113,9 +114,10 @@ func (r *ExporterRepository) GetAssetsToExport() ([]models.AssetExport, error) {
 			LEFT JOIN assignments r on a.id = r.asset_id
 			JOIN asset_accounts acg on acg.id = a.asset_account_id
 			JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
+			WHERE a.owner_id = $1
 			ORDER BY a.activation_date desc 
 	`
-	rows, err := r.db.Query(query)
+	rows, err := r.db.Query(query, ownerId)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +153,7 @@ func (r *ExporterRepository) GetAssetsToExport() ([]models.AssetExport, error) {
 }
 
 // posible error de direccion de memoria
-func (r *ExporterRepository) CountAssetsConfirmatedAndDesactivated(year, month, day int) (*dtos.CounterAssetsToExport, error) {
+func (r *ExporterRepository) CountAssetsConfirmatedAndDesactivated(year, month, day int, ownerId string) (*dtos.CounterAssetsToExport, error) {
 	var responseQ dtos.CounterAssetsToExport
 	query := `
 		SELECT 
@@ -160,10 +162,12 @@ func (r *ExporterRepository) CountAssetsConfirmatedAndDesactivated(year, month, 
 			COALESCE(SUM(ir.has_label::int),0) as total_has_label,
 			COALESCE(SUM(case when ir.has_label = false then 1 else 0 end), 0) AS total_without_label
 		FROM inventory_records ir
-		JOIN inventory_periods p on ir.period_id = p.id
-		WHERE p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3
+		JOIN inventory_periods p ON ir.period_id = p.id
+		JOIN assets a ON a.id = ir.asset_id
+		WHERE a.owner_id = $4
+			AND (p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3)
 	`
-	err := r.db.QueryRow(query, year, month, day).
+	err := r.db.QueryRow(query, year, month, day, ownerId).
 		Scan(
 			&responseQ.TotalConfirmated,
 			&responseQ.TotalDesactivated,
