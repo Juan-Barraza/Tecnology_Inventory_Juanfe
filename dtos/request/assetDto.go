@@ -3,6 +3,7 @@ package dtos
 type CreateAssetRequest struct {
 	Code              string   `json:"code"`
 	Description       string   `json:"description"`
+	Owner             *string  `json:"owner"`
 	CategoryID        int      `json:"category_id"`
 	AccountingGroupID int      `json:"accounting_group_id"`
 	AssetAccountID    int      `json:"asset_account_id"`
@@ -16,6 +17,7 @@ type CreateAssetRequest struct {
 type UpdateAssetRequest struct {
 	Code              string   `json:"code"`
 	Description       *string  `json:"description"`
+	Owner             *string  `json:"owner"`
 	CategoryID        *int     `json:"category_id"`
 	AccountingGroupID *int     `json:"accounting_group_id"`
 	AssetAccountID    *int     `json:"asset_account_id"`
@@ -36,6 +38,7 @@ type AssetResponse struct {
 	ID                  string   `json:"id"`
 	Code                string   `json:"code"`
 	Description         string   `json:"description"`
+	Owner               *string  `json:"owner"`
 	Category            string   `json:"category"`
 	AccountCode         int64    `json:"account_code"`
 	OpenLedger          *string  `json:"open_ledger"`

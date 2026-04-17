@@ -68,7 +68,12 @@ func (s *AssetService) Create(req dtos.CreateAssetRequest, userID string) (*dtos
 		return nil, errors.New("asset code already exists")
 	}
 
-	actDate, _ := time.Parse(time.DateOnly, req.ActivationDate) // ya validado en handler
+	actDate := time.Now()
+	if req.ActivationDate != "" {
+		if parsed, err := time.Parse(time.DateOnly, req.ActivationDate); err == nil {
+			actDate = parsed
+		}
+	}
 
 	physical := models.PhysicalStatus(req.PhysicalStatus)
 	if !utils.IsValidPhysicalStatus(physical) {
@@ -80,6 +85,7 @@ func (s *AssetService) Create(req dtos.CreateAssetRequest, userID string) (*dtos
 		Code:           req.Code,
 		Description:    req.Description,
 		OwnerId:        userID,
+		Owner:          req.Owner,
 		CategoryID:     req.CategoryID,
 		AssetAccountID: req.AssetAccountID,
 		CityID:         req.CityID,
@@ -140,6 +146,9 @@ func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest, userId str
 	}
 	if req.PhysicalStatus != nil {
 		a.PhysicalStatus = models.PhysicalStatus(*req.PhysicalStatus)
+	}
+	if req.Owner != nil {
+		a.Owner = req.Owner
 	}
 
 	if err := s.assetRepo.Update(a); err != nil {
@@ -230,6 +239,7 @@ func toAssetResponse(a models.AssetDetail) dtos.AssetResponse {
 		ID:                  a.ID,
 		Code:                a.Code,
 		Description:         a.Description,
+		Owner:               a.Owner,
 		Category:            a.CategoryName,
 		AccountingGroupName: a.AccountingGroupName,
 		AccountingGroupCode: a.AccountingGroupCode,

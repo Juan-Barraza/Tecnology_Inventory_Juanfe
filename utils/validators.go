@@ -11,17 +11,10 @@ import (
 // ── Asset validators ──────────────────────────────────────────
 
 func ValidateCreateAsset(req dtos.CreateAssetRequest) error {
-	if req.Code == "" {
-		return errors.New("code is required")
-	}
-	if req.Description == "" {
-		return errors.New("description is required")
-	}
-	if req.ActivationDate == "" {
-		return errors.New("activation_date is required")
-	}
-	if _, err := time.Parse(time.DateOnly, req.ActivationDate); err != nil {
-		return errors.New("activation_date must be YYYY-MM-DD")
+	if req.ActivationDate != "" {
+		if _, err := time.Parse(time.DateOnly, req.ActivationDate); err != nil {
+			return errors.New("activation_date must be YYYY-MM-DD")
+		}
 	}
 	return nil
 }

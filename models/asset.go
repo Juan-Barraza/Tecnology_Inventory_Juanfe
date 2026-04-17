@@ -27,6 +27,7 @@ type Asset struct {
 	Code           string
 	Description    string
 	OwnerId		   string
+	Owner          *string
 	CategoryID     int
 	AssetAccountID int
 	CityID         int
