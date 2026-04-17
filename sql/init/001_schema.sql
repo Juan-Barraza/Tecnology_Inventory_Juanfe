@@ -21,6 +21,7 @@ CREATE TABLE areas (
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(100) NOT NULL,
     description TEXT,
+    owner       VARCHAR(100),
     CONSTRAINT uq_areas_name UNIQUE (name)
 );
 
@@ -68,12 +69,13 @@ CREATE TABLE users (
 CREATE TABLE assets (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code             VARCHAR(50)  NOT NULL,
-    description      TEXT         NOT NULL,
-    category_id      INT          NOT NULL REFERENCES asset_categories(id),
-    asset_account_id INT          NOT NULL REFERENCES asset_accounts(id),
-    city_id          INT          NOT NULL REFERENCES cities(id),
+    description      TEXT,
+    category_id      INT          REFERENCES asset_categories(id),
+    asset_account_id INT          REFERENCES asset_accounts(id),
+    city_id          INT          REFERENCES cities(id),
     area_id          INT          REFERENCES areas(id),
     owner_id         UUID         REFERENCES users(id),
+    owner            VARCHAR(150),
     historical_cost  NUMERIC(14,2),
     activation_date  DATE         NOT NULL,
     logical_status   logical_status_enum  NOT NULL DEFAULT 'active',

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	dtos "inventory-juanfe/dtos/request"
 	"inventory-juanfe/models"
@@ -19,24 +20,25 @@ func NewAssetRepository(db *sql.DB) *AssetRepository {
 
 const assetSelectBase = `
     SELECT
-        a.id, a.code, a.description,
-        a.category_id, a.asset_account_id, a.city_id, a.area_id,
-        a.historical_cost, a.activation_date,
+        a.id, COALESCE(a.code,''), COALESCE(a.description,''),
+        COALESCE(a.category_id,0), COALESCE(a.asset_account_id,0), COALESCE(a.city_id,0), a.area_id,
+        a.historical_cost, COALESCE(a.activation_date, CURRENT_DATE),
         a.logical_status, a.physical_status,
         a.created_at, a.updated_at,
-        ac.name   AS category_name,
-        ag.name   AS accounting_group_name,
-        ag.code   AS accounting_group_code,
-        aa.account_code,
+        a.owner,
+        COALESCE(ac.name,'')   AS category_name,
+        COALESCE(ag.name,'')   AS accounting_group_name,
+        COALESCE(ag.code,0)    AS accounting_group_code,
+        COALESCE(aa.account_code,0),
         aa.open_ledger,
-        c.name    AS city_name,
+        COALESCE(c.name,'')    AS city_name,
         ar.name   AS area_name
     FROM assets a
-    JOIN asset_categories  ac ON ac.id  = a.category_id
-    JOIN asset_accounts    aa ON aa.id  = a.asset_account_id
-    JOIN accounting_groups ag ON ag.id  = aa.accounting_group_id
-    JOIN cities            c  ON c.id   = a.city_id
-    LEFT JOIN areas        ar ON ar.id  = a.area_id`
+    LEFT JOIN asset_categories  ac ON ac.id  = a.category_id
+    LEFT JOIN asset_accounts    aa ON aa.id  = a.asset_account_id
+    LEFT JOIN accounting_groups ag ON ag.id  = aa.accounting_group_id
+    LEFT JOIN cities            c  ON c.id   = a.city_id
+    LEFT JOIN areas             ar ON ar.id  = a.area_id`
 
 func (r *AssetRepository) FindAll(f dtos.AssetFilter, ownerId string) ([]models.AssetDetail, int, error) {
 	where, args := buildAssetWhere(f, ownerId)
@@ -95,13 +97,15 @@ func (r *AssetRepository) FindByID(id, owner_id string) (*models.AssetDetail, er
 func (r *AssetRepository) FindByCode(code string) (*models.Asset, error) {
 	var a models.Asset
 	err := r.db.QueryRow(`
-        SELECT id, code, description, category_id, asset_account_id,
-            city_id, area_id, historical_cost, activation_date,
+        SELECT id, COALESCE(code,''), COALESCE(description,''),
+            COALESCE(category_id,0), COALESCE(asset_account_id,0),
+            COALESCE(city_id,0), area_id, owner, historical_cost,
+            COALESCE(activation_date, CURRENT_DATE),
             logical_status, physical_status, created_at, updated_at
         FROM assets WHERE code = $1`, code,
 	).Scan(
 		&a.ID, &a.Code, &a.Description, &a.CategoryID, &a.AssetAccountID,
-		&a.CityID, &a.AreaID, &a.HistoricalCost, &a.ActivationDate,
+		&a.CityID, &a.AreaID, &a.Owner, &a.HistoricalCost, &a.ActivationDate,
 		&a.LogicalStatus, &a.PhysicalStatus, &a.CreatedAt, &a.UpdatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -113,12 +117,14 @@ func (r *AssetRepository) FindByCode(code string) (*models.Asset, error) {
 func (r *AssetRepository) Create(a *models.Asset) error {
 	_, err := r.db.Exec(`
         INSERT INTO assets
-            (id, code, description, owner_id, category_id, asset_account_id,
+            (id, code, description, owner_id, owner, category_id, asset_account_id,
              city_id, area_id, historical_cost, activation_date,
              logical_status, physical_status)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-		a.ID, a.Code, a.Description, a.OwnerId, a.CategoryID, a.AssetAccountID,
-		a.CityID, a.AreaID, a.HistoricalCost, a.ActivationDate,
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+		a.ID, a.Code, a.Description, a.OwnerId, a.Owner,
+		nullIfZero(a.CategoryID), nullIfZero(a.AssetAccountID),
+		nullIfZero(a.CityID), nullPtrIfZero(a.AreaID), a.HistoricalCost,
+		nullIfZeroTime(a.ActivationDate),
 		a.LogicalStatus, a.PhysicalStatus,
 	)
 	return err
@@ -135,11 +141,13 @@ func (r *AssetRepository) Update(a *models.Asset) error {
             area_id          = $6,
             historical_cost  = $7,
             physical_status  = $8,
-            logical_status   = $9
-        WHERE id = $10`,
-		a.Code, a.Description, a.CategoryID, a.AssetAccountID,
-		a.CityID, a.AreaID, a.HistoricalCost,
-		a.PhysicalStatus, a.LogicalStatus, a.ID,
+            logical_status   = $9,
+            owner            = $10
+        WHERE id = $11`,
+		a.Code, a.Description,
+		nullIfZero(a.CategoryID), nullIfZero(a.AssetAccountID),
+		nullIfZero(a.CityID), nullPtrIfZero(a.AreaID), a.HistoricalCost,
+		a.PhysicalStatus, a.LogicalStatus, a.Owner, a.ID,
 	)
 	return err
 }
@@ -204,7 +212,7 @@ func buildAssetWhere(f dtos.AssetFilter, ownerId string) (string, []interface{})
 	}
 	if f.Search != nil && *f.Search != "" {
 		conds = append(conds, fmt.Sprintf(
-			"(a.code ILIKE $%d OR a.description ILIKE $%d)", n, n,
+			"(a.code ILIKE $%d OR a.description ILIKE $%d OR COALESCE(a.owner,'') ILIKE $%d)", n, n, n,
 		))
 		args = append(args, "%"+*f.Search+"%")
 		n++
@@ -227,10 +235,34 @@ func scanAssetDetail(s scanner, a *models.AssetDetail) error {
 		&a.HistoricalCost, &a.ActivationDate,
 		&a.LogicalStatus, &a.PhysicalStatus,
 		&a.CreatedAt, &a.UpdatedAt,
+		&a.Owner,
 		&a.CategoryName,
 		&a.AccountingGroupName, &a.AccountingGroupCode,
 		&a.AccountCode, &a.OpenLedger,
 		&a.CityName,
 		&a.AreaName,
 	)
+}
+
+// ── helpers: convert zero-values to NULL for nullable FK columns ──
+
+func nullIfZero(v int) interface{} {
+	if v == 0 {
+		return nil
+	}
+	return v
+}
+
+func nullPtrIfZero(v *int) interface{} {
+	if v == nil || *v == 0 {
+		return nil
+	}
+	return *v
+}
+
+func nullIfZeroTime(t time.Time) interface{} {
+	if t.IsZero() {
+		return nil
+	}
+	return t
 }
