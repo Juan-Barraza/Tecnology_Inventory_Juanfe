@@ -94,7 +94,7 @@ func (r *AssetRepository) FindByID(id, owner_id string) (*models.AssetDetail, er
 	return &a, nil
 }
 
-func (r *AssetRepository) FindByCode(code string) (*models.Asset, error) {
+func (r *AssetRepository) FindByCode(code *string) (*models.Asset, error) {
 	var a models.Asset
 	err := r.db.QueryRow(`
         SELECT id, COALESCE(code,''), COALESCE(description,''),

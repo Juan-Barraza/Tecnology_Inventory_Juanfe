@@ -122,7 +122,7 @@ func (s *AssetService) Update(id string, req dtos.UpdateAssetRequest, userId str
 
 	a := &detail.Asset
 
-	if req.Code != "" {
+	if req.Code != nil {
 		a.Code = req.Code
 	}
 

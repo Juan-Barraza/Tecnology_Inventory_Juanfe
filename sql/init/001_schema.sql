@@ -68,7 +68,7 @@ CREATE TABLE users (
 -- ── Assets ────────────────────────────────────────────────────
 CREATE TABLE assets (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code             VARCHAR(50)  NOT NULL,
+    code             VARCHAR(50),
     description      TEXT,
     category_id      INT          REFERENCES asset_categories(id),
     asset_account_id INT          REFERENCES asset_accounts(id),
@@ -82,7 +82,6 @@ CREATE TABLE assets (
     physical_status  physical_status_enum NOT NULL DEFAULT 'optimal',
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_assets_code UNIQUE (code)
 );
 
 -- ── Assignments ───────────────────────────────────────────────

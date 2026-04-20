@@ -24,7 +24,7 @@ const (
 
 type Asset struct {
 	ID             string
-	Code           string
+	Code           *string
 	Description    string
 	OwnerId		   string
 	Owner          *string
