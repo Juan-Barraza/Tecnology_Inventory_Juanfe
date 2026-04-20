@@ -18,8 +18,8 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month, day int, ownerId str
 	assets := []models.AssetExport{}
 	query := `
 		 SELECT 
-			a.code,
-			a.description,
+			COALESCE(a.code, 'Sin Codigo') as code, 
+			COALESCE(a.description, '') as description,
 			a.historical_cost,
 			a.activation_date,
 			a.logical_status,
@@ -94,8 +94,8 @@ func (r *ExporterRepository) GetAssetsToExport(ownerId string) ([]models.AssetEx
 	assests := []models.AssetExport{}
 	query := `
 			SELECT 
-				a.code,
-				a.description,
+				COALESCE(a.code, 'Sin Codigo') as code, 
+				COALESCE(a.description, '') as description,
 				a.historical_cost,
 				a.activation_date,
 				a.logical_status,
