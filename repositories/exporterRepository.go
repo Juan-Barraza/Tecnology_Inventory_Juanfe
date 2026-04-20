@@ -24,28 +24,28 @@ func (r *ExporterRepository) GetAssetsWithDate(year, month, day int, ownerId str
 			a.activation_date,
 			a.logical_status,
 			a.physical_status,
-			ac.name as category,
+			COALESCE(ac.name, '') as category,
 			COALESCE(ar.name, '') as area,
-			c.name as city,
-			COALESCE(r.responsible_name, ''),
-			COALESCE(r.responsible_position, ''),
+			COALESCE(c.name, '') as city,
+			COALESCE(r.responsible_name, '') as responsible_name,
+			COALESCE(r.responsible_position, '') as responsible_position,
 			p.period_year,
 			p.period_month,
 			p.period_day,
-			asac.code as accounting_group,
-			acg.account_code as sub_code,
+			COALESCE(asac.code, 0) as accounting_group,
+			COALESCE(acg.account_code, 0) as sub_code,
 			ir.confirmed ,
 			ir.deactivated,
 			ir.has_label  
 		FROM assets a 
-		JOIN asset_categories ac on ac.id = a.category_id
+		LEFT JOIN asset_categories ac on ac.id = a.category_id
 		LEFT JOIN areas ar on ar.id = a.area_id 
-		JOIN cities c on c.id = a.city_id 
+		LEFT JOIN cities c on c.id = a.city_id 
 		LEFT JOIN assignments r on a.id = r.asset_id
 		JOIN inventory_records ir on ir.asset_id = a.id 
 		JOIN inventory_periods p on ir.period_id = p.id
-		JOIN asset_accounts acg on acg.id = a.asset_account_id
-		JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
+		LEFT JOIN asset_accounts acg on acg.id = a.asset_account_id
+		LEFT JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
 		WHERE a.owner_id = $4 AND 
 		(p.period_year = $1 AND p.period_month = $2 AND p.period_day = $3)
 		ORDER BY a.activation_date desc
@@ -100,20 +100,20 @@ func (r *ExporterRepository) GetAssetsToExport(ownerId string) ([]models.AssetEx
 				a.activation_date,
 				a.logical_status,
 				a.physical_status,
-				ac.name as category,
+				COALESCE(ac.name, '') as category,
 				COALESCE(ar.name, '') as area,
-				c.name as city,
-				COALESCE(r.responsible_name, ''),
-				COALESCE(r.responsible_position,''),
-				asac.code as accounting_group,
-				acg.account_code as sub_code 
+				COALESCE(c.name, '') as city,
+				COALESCE(r.responsible_name, '') as responsible_name,
+				COALESCE(r.responsible_position,'') as responsible_position,
+				COALESCE(asac.code, 0) as accounting_group,
+				COALESCE(acg.account_code, 0) as sub_code 
 			FROM assets a 
-			JOIN asset_categories ac on ac.id = a.category_id
+			LEFT JOIN asset_categories ac on ac.id = a.category_id
 			LEFT JOIN areas ar on ar.id = a.area_id 
-			JOIN cities c on c.id = a.city_id 
+			LEFT JOIN cities c on c.id = a.city_id 
 			LEFT JOIN assignments r on a.id = r.asset_id
-			JOIN asset_accounts acg on acg.id = a.asset_account_id
-			JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
+			LEFT JOIN asset_accounts acg on acg.id = a.asset_account_id
+			LEFT JOIN accounting_groups asac on acg.accounting_group_id  = asac.id
 			WHERE a.owner_id = $1
 			ORDER BY a.activation_date desc 
 	`
