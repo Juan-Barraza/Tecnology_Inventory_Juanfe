@@ -1,7 +1,7 @@
 package dtos
 
 type CreateAssetRequest struct {
-	Code              string   `json:"code"`
+	Code              *string  `json:"code"`
 	Description       string   `json:"description"`
 	Owner             *string  `json:"owner"`
 	CategoryID        int      `json:"category_id"`
@@ -15,7 +15,7 @@ type CreateAssetRequest struct {
 }
 
 type UpdateAssetRequest struct {
-	Code              string   `json:"code"`
+	Code              *string  `json:"code"`
 	Description       *string  `json:"description"`
 	Owner             *string  `json:"owner"`
 	CategoryID        *int     `json:"category_id"`
@@ -36,7 +36,7 @@ type UpdateAssetStatusRequest struct {
 
 type AssetResponse struct {
 	ID                  string   `json:"id"`
-	Code                string   `json:"code"`
+	Code                *string  `json:"code"`
 	Description         string   `json:"description"`
 	Owner               *string  `json:"owner"`
 	Category            string   `json:"category"`
